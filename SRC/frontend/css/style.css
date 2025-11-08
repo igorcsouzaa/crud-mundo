@@ -1,0 +1,320 @@
+/* Arquivo: crud_mundo/frontend/css/style.css */
+
+/* Importação de Font Awesome para ícones */
+@import url('https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css');
+
+:root {
+    --color-primary: #007bff; /* Azul para destaque */
+    --color-secondary: #28a745; /* Verde para sucesso */
+    --color-danger: #dc3545; /* Vermelho para exclusão */
+    --color-light: #f8f9fa;
+    --color-dark: #343a40;
+    --color-text: #212529;
+    --color-bg: #ffffff;
+    --color-border: #dee2e6;
+    --font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+}
+
+body {
+    font-family: var(--font-family);
+    line-height: 1.6;
+    color: var(--color-text);
+    background-color: var(--color-light);
+    padding-top: 60px; /* Espaço para a navbar fixa */
+}
+
+/* --- Navbar Fixa --- */
+.navbar {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    background-color: var(--color-dark);
+    color: var(--color-light);
+    padding: 1rem 0;
+    z-index: 1000;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.navbar-container {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 0 1rem;
+}
+
+.navbar-brand {
+    font-size: 1.5rem;
+    font-weight: bold;
+    color: var(--color-light);
+    text-decoration: none;
+}
+
+.navbar-nav {
+    list-style: none;
+    display: flex;
+}
+
+.nav-item {
+    margin-left: 1.5rem;
+}
+
+.nav-link {
+    color: var(--color-light);
+    text-decoration: none;
+    padding: 0.5rem 0;
+    transition: color 0.3s ease;
+}
+
+.nav-link:hover {
+    color: var(--color-primary);
+}
+
+/* --- Layout Principal --- */
+.container {
+    max-width: 1200px;
+    margin: 2rem auto;
+    padding: 0 1rem;
+}
+
+h1, h2 {
+    color: var(--color-dark);
+    margin-bottom: 1rem;
+}
+
+/* --- Formulários --- */
+.form-group {
+    margin-bottom: 1rem;
+}
+
+.form-group label {
+    display: block;
+    margin-bottom: 0.5rem;
+    font-weight: bold;
+}
+
+.form-control {
+    width: 100%;
+    padding: 0.75rem;
+    border: 1px solid var(--color-border);
+    border-radius: 0.25rem;
+    font-size: 1rem;
+    transition: border-color 0.3s ease;
+}
+
+.form-control:focus {
+    border-color: var(--color-primary);
+    outline: none;
+    box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.25);
+}
+
+/* --- Botões --- */
+.btn {
+    display: inline-block;
+    padding: 0.75rem 1.5rem;
+    font-size: 1rem;
+    font-weight: 600;
+    text-align: center;
+    border: none;
+    border-radius: 0.25rem;
+    cursor: pointer;
+    transition: background-color 0.3s ease, opacity 0.3s ease;
+    text-decoration: none;
+}
+
+.btn-primary {
+    background-color: var(--color-primary);
+    color: var(--color-light);
+}
+
+.btn-primary:hover {
+    background-color: #0056b3;
+}
+
+.btn-secondary {
+    background-color: var(--color-secondary);
+    color: var(--color-light);
+}
+
+.btn-secondary:hover {
+    background-color: #1e7e34;
+}
+
+.btn-danger {
+    background-color: var(--color-danger);
+    color: var(--color-light);
+}
+
+.btn-danger:hover {
+    background-color: #bd2130;
+}
+
+.btn-sm {
+    padding: 0.5rem 1rem;
+    font-size: 0.875rem;
+}
+
+/* --- Tabelas --- */
+.table-responsive {
+    overflow-x: auto;
+}
+
+.data-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 1rem;
+    background-color: var(--color-bg);
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.05);
+}
+
+.data-table th, .data-table td {
+    padding: 1rem;
+    text-align: left;
+    border-bottom: 1px solid var(--color-border);
+}
+
+.data-table th {
+    background-color: var(--color-dark);
+    color: var(--color-light);
+    font-weight: 600;
+    text-transform: uppercase;
+    font-size: 0.85rem;
+}
+
+.data-table tr:hover {
+    background-color: var(--color-light);
+}
+
+.action-buttons {
+    display: flex;
+    gap: 0.5rem;
+}
+
+/* --- Pesquisa Dinâmica --- */
+.search-bar {
+    margin-bottom: 1.5rem;
+}
+
+/* --- Alertas --- */
+.alert {
+    padding: 1rem;
+    margin-bottom: 1rem;
+    border-radius: 0.25rem;
+    font-weight: bold;
+}
+
+.alert-success {
+    background-color: #d4edda;
+    color: #155724;
+    border: 1px solid #c3e6cb;
+}
+
+.alert-danger {
+    background-color: #f8d7da;
+    color: #721c24;
+    border: 1px solid #f5c6cb;
+}
+
+/* --- Responsividade --- */
+@media (max-width: 768px) {
+    .navbar-container {
+        flex-direction: column;
+    }
+
+    .navbar-nav {
+        margin-top: 1rem;
+        flex-direction: column;
+        align-items: center;
+    }
+
+    .nav-item {
+        margin: 0.5rem 0;
+    }
+
+    .data-table th, .data-table td {
+        padding: 0.75rem;
+        font-size: 0.9rem;
+    }
+
+    .action-buttons {
+        flex-direction: column;
+        gap: 0.25rem;
+    }
+
+    .btn {
+        width: 100%;
+    }
+}
+
+/* --- Estilos Específicos para a Página Inicial (Visão Geral) --- */
+.card-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 1.5rem;
+    margin-top: 2rem;
+}
+
+.card {
+    background-color: var(--color-bg);
+    border: 1px solid var(--color-border);
+    border-radius: 0.5rem;
+    padding: 1.5rem;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+    transition: transform 0.3s ease;
+}
+
+.card:hover {
+    transform: translateY(-5px);
+}
+
+.card-title {
+    font-size: 1.25rem;
+    margin-bottom: 0.5rem;
+    color: var(--color-primary);
+}
+
+.card-body p {
+    margin-bottom: 0.5rem;
+}
+
+.flag-icon {
+    width: 40px;
+    height: auto;
+    margin-right: 10px;
+    border: 1px solid #ccc;
+}
+
+/* Estilos para a página de detalhes (API) */
+.details-section {
+    margin-top: 2rem;
+    padding: 1.5rem;
+    background-color: var(--color-bg);
+    border-radius: 0.5rem;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+}
+
+.details-section h3 {
+    border-bottom: 2px solid var(--color-primary);
+    padding-bottom: 0.5rem;
+    margin-bottom: 1rem;
+}
+
+.weather-info {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    margin-top: 1rem;
+}
+
+.weather-icon {
+    width: 50px;
+    height: 50px;
+}

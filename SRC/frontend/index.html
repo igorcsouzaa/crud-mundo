@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CRUD Mundo - Gerenciamento de Países</title>
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+    <nav class="navbar">
+        <div class="navbar-container">
+            <a href="index.html" class="navbar-brand">CRUD Mundo</a>
+            <ul class="navbar-nav">
+                <li class="nav-item"><a href="index.html" class="nav-link">Países</a></li>
+                <li class="nav-item"><a href="cidades.html" class="nav-link">Cidades</a></li>
+                <li class="nav-item"><a href="estatisticas.html" class="nav-link">Estatísticas</a></li>
+            </ul>
+        </div>
+    </nav>
+
+    <div class="container">
+        <h1>Gerenciamento de Países</h1>
+
+        <!-- Formulário de Cadastro/Edição de País -->
+        <div class="card" id="form-pais-card">
+            <h2 id="form-pais-title">Cadastrar Novo País</h2>
+            <form id="form-pais">
+                <input type="hidden" id="id_pais" name="id_pais">
+
+                <div class="form-group">
+                    <label for="nome">Nome do País:</label>
+                    <input type="text" id="nome" name="nome" class="form-control" required maxlength="100">
+                </div>
+
+                <div class="form-group">
+                    <label for="continente">Continente:</label>
+                    <select id="continente" name="continente" class="form-control" required>
+                        <option value="">Selecione o Continente</option>
+                        <option value="África">África</option>
+                        <option value="América do Norte">América do Norte</option>
+                        <option value="América do Sul">América do Sul</option>
+                        <option value="Ásia">Ásia</option>
+                        <option value="Europa">Europa</option>
+                        <option value="Oceania">Oceania</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label for="populacao">População:</label>
+                    <input type="number" id="populacao" name="populacao" class="form-control" required min="1">
+                </div>
+
+                <div class="form-group">
+                    <label for="idioma">Idioma Oficial:</label>
+                    <input type="text" id="idioma" name="idioma" class="form-control" required maxlength="50">
+                </div>
+
+                <button type="submit" class="btn btn-primary" id="btn-submit-pais">Cadastrar</button>
+                <button type="button" class="btn btn-secondary" id="btn-cancelar-edicao" style="display: none;">Cancelar Edição</button>
+            </form>
+        </div>
+
+        <hr style="margin: 2rem 0;">
+
+        <h2>Lista de Países</h2>
+
+        <!-- Barra de Pesquisa -->
+        <div class="search-bar">
+            <input type="text" id="search-pais" class="form-control" placeholder="Pesquisar país pelo nome...">
+        </div>
+
+        <!-- Tabela de Países -->
+        <div class="table-responsive">
+            <table class="data-table" id="tabela-paises">
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Nome</th>
+                        <th>Continente</th>
+                        <th>População</th>
+                        <th>Idioma</th>
+                        <th>Ações</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <!-- Dados serão inseridos aqui pelo JavaScript -->
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <script src="js/script.js"></script>
+    <script>
+        // Inicializa a listagem de países ao carregar a página
+        document.addEventListener('DOMContentLoaded', () => {
+            listarPaises();
+        });
+    </script>
+</body>
+</html>
