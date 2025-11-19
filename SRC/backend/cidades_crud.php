@@ -1,66 +1,123 @@
 <?php
-// Arquivo: crud_mundo/backend/cidades_crud.php
 header('Content-Type: application/json');
 require_once 'config.php';
 
 $response = ['success' => false, 'message' => 'Requisição inválida.'];
 
-if (isset($_GET['action'])) {
-    $action = $_GET['action'];
-    $pdo = conectar_db();
+try {
+    $mysqli = conectar_db();
 
-    try {
+    // pega o corpo JSON enviado via POST
+    $input = json_decode(file_get_contents('php://input'), true);
+    if (!is_array($input)) {
+        $input = [];
+    }
+
+    // action vem no JSON (principal) ou no POST normal
+    $action = $input['action'] ?? ($_POST['action'] ?? null);
+
+    if ($action) {
         switch ($action) {
             case 'read':
-                // READ: Listar todas as cidades, incluindo o nome do país
-                $sql = "SELECT c.*, p.nome AS nome_pais FROM cidades c JOIN paises p ON c.id_pais = p.id_pais ORDER BY c.nome ASC";
-                $stmt = $pdo->query($sql);
-                $cidades = $stmt->fetchAll();
+                // lista todas as cidades com o nome do país
+                $sql = "
+                    SELECT
+                        c.*,
+                        p.nome AS nome_pais
+                    FROM
+                        cidades c
+                    JOIN
+                        paises p ON c.id_pais = p.id_pais
+                    ORDER BY
+                        c.nome ASC
+                ";
+                $result  = $mysqli->query($sql);
+                $cidades = $result->fetch_all(MYSQLI_ASSOC);
+
                 $response = ['success' => true, 'data' => $cidades];
                 break;
 
             case 'read_by_country':
-                // READ: Listar cidades de um país específico
-                if (isset($_GET['id_pais'])) {
-                    $id_pais = $_GET['id_pais'];
-                    $sql = "SELECT * FROM cidades WHERE id_pais = ? ORDER BY nome ASC";
-                    $stmt = $pdo->prepare($sql);
-                    $stmt->execute([$id_pais]);
-                    $cidades = $stmt->fetchAll();
+                // lista cidades de um país específico
+                $id_pais = isset($input['id_pais'])
+                    ? (int)$input['id_pais']
+                    : (isset($_POST['id_pais']) ? (int)$_POST['id_pais'] : null);
+
+                if ($id_pais) {
+                    $stmt = $mysqli->prepare(
+                        "SELECT * FROM cidades WHERE id_pais = ? ORDER BY nome ASC"
+                    );
+                    $stmt->bind_param('i', $id_pais);
+                    $stmt->execute();
+                    $result  = $stmt->get_result();
+                    $cidades = $result->fetch_all(MYSQLI_ASSOC);
+
                     $response = ['success' => true, 'data' => $cidades];
                 }
                 break;
 
             case 'create':
-                // CREATE: Cadastrar nova cidade
-                $data = json_decode(file_get_contents('php://input'), true);
-                if ($data) {
-                    $sql = "INSERT INTO cidades (nome, populacao, id_pais) VALUES (?, ?, ?)";
-                    $stmt = $pdo->prepare($sql);
-                    $stmt->execute([$data['nome'], $data['populacao'], $data['id_pais']]);
-                    $response = ['success' => true, 'message' => 'Cidade cadastrada com sucesso!', 'id' => $pdo->lastInsertId()];
+                // cadastra nova cidade
+                $data = $input;
+
+                if ($data && isset($data['nome'], $data['populacao'], $data['id_pais'])) {
+                    $sql  = "INSERT INTO cidades (nome, populacao, id_pais) VALUES (?, ?, ?)";
+                    $stmt = $mysqli->prepare($sql);
+
+                    $nome      = $data['nome'];
+                    $populacao = (int)$data['populacao'];
+                    $id_pais   = (int)$data['id_pais'];
+
+                    $stmt->bind_param('sii', $nome, $populacao, $id_pais);
+                    $stmt->execute();
+
+                    $response = [
+                        'success' => true,
+                        'message' => 'Cidade cadastrada com sucesso!',
+                        'id'      => $mysqli->insert_id
+                    ];
                 }
                 break;
 
             case 'update':
-                // UPDATE: Atualizar dados de uma cidade
-                $data = json_decode(file_get_contents('php://input'), true);
-                if ($data && isset($data['id_cidade'])) {
-                    $sql = "UPDATE cidades SET nome = ?, populacao = ?, id_pais = ? WHERE id_cidade = ?";
-                    $stmt = $pdo->prepare($sql);
-                    $stmt->execute([$data['nome'], $data['populacao'], $data['id_pais'], $data['id_cidade']]);
+                // atualiza uma cidade existente
+                $data = $input;
+
+                if (
+                    $data &&
+                    isset($data['id_cidade'], $data['nome'], $data['populacao'], $data['id_pais'])
+                ) {
+                    $sql = "
+                        UPDATE cidades
+                           SET nome = ?, populacao = ?, id_pais = ?
+                         WHERE id_cidade = ?
+                    ";
+                    $stmt = $mysqli->prepare($sql);
+
+                    $nome      = $data['nome'];
+                    $populacao = (int)$data['populacao'];
+                    $id_pais   = (int)$data['id_pais'];
+                    $id_cidade = (int)$data['id_cidade'];
+
+                    $stmt->bind_param('siii', $nome, $populacao, $id_pais, $id_cidade);
+                    $stmt->execute();
+
                     $response = ['success' => true, 'message' => 'Cidade atualizada com sucesso!'];
                 }
                 break;
 
             case 'delete':
-                // DELETE: Excluir uma cidade
-                if (isset($_GET['id_cidade'])) {
-                    $id_cidade = $_GET['id_cidade'];
-                    $stmt = $pdo->prepare("DELETE FROM cidades WHERE id_cidade = ?");
-                    $stmt->execute([$id_cidade]);
+                // exclui uma cidade
+                $id_cidade = isset($input['id_cidade'])
+                    ? (int)$input['id_cidade']
+                    : (isset($_POST['id_cidade']) ? (int)$_POST['id_cidade'] : null);
 
-                    if ($stmt->rowCount() > 0) {
+                if ($id_cidade) {
+                    $stmt = $mysqli->prepare("DELETE FROM cidades WHERE id_cidade = ?");
+                    $stmt->bind_param('i', $id_cidade);
+                    $stmt->execute();
+
+                    if ($stmt->affected_rows > 0) {
                         $response = ['success' => true, 'message' => 'Cidade excluída com sucesso!'];
                     } else {
                         $response = ['success' => false, 'message' => 'Cidade não encontrada para exclusão.'];
@@ -72,11 +129,9 @@ if (isset($_GET['action'])) {
                 $response['message'] = 'Ação não reconhecida.';
                 break;
         }
-    } catch (\PDOException $e) {
-        // Captura erros de SQL, como violação de UNIQUE (nome da cidade no país)
-        $response['message'] = 'Erro no banco de dados: ' . $e->getMessage();
     }
+} catch (\mysqli_sql_exception $e) {
+    $response['message'] = 'Erro no banco de dados: ' . $e->getMessage();
 }
 
 echo json_encode($response);
-?>

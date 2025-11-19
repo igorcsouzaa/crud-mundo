@@ -1,30 +1,43 @@
 <?php
-// Arquivo: crud_mundo/backend/paises_crud.php
 header('Content-Type: application/json');
 require_once 'config.php';
 
 $response = ['success' => false, 'message' => 'Requisição inválida.'];
 
-if (isset($_GET['action'])) {
-    $action = $_GET['action'];
-    $pdo = conectar_db();
+try {
+    $mysqli = conectar_db();
 
-    try {
+    // corpo JSON via POST
+    $input = json_decode(file_get_contents('php://input'), true);
+    if (!is_array($input)) {
+        $input = [];
+    }
+
+    $action = $input['action'] ?? ($_POST['action'] ?? null);
+
+    if ($action) {
         switch ($action) {
             case 'read':
-                // READ: Listar todos os países
-                $stmt = $pdo->query("SELECT * FROM paises ORDER BY nome ASC");
-                $paises = $stmt->fetchAll();
+                // lista todos os países
+                $result = $mysqli->query("SELECT * FROM paises ORDER BY nome ASC");
+                $paises = $result->fetch_all(MYSQLI_ASSOC);
+
                 $response = ['success' => true, 'data' => $paises];
                 break;
 
             case 'read_one':
-                // READ ONE: Obter detalhes de um país específico
-                if (isset($_GET['id_pais'])) {
-                    $id_pais = $_GET['id_pais'];
-                    $stmt = $pdo->prepare("SELECT * FROM paises WHERE id_pais = ?");
-                    $stmt->execute([$id_pais]);
-                    $pais = $stmt->fetch();
+                // pega um país específico
+                $id_pais = isset($input['id_pais'])
+                    ? (int)$input['id_pais']
+                    : (isset($_POST['id_pais']) ? (int)$_POST['id_pais'] : null);
+
+                if ($id_pais) {
+                    $stmt = $mysqli->prepare("SELECT * FROM paises WHERE id_pais = ?");
+                    $stmt->bind_param('i', $id_pais);
+                    $stmt->execute();
+                    $result = $stmt->get_result();
+                    $pais   = $result->fetch_assoc();
+
                     if ($pais) {
                         $response = ['success' => true, 'data' => $pais];
                     } else {
@@ -34,51 +47,85 @@ if (isset($_GET['action'])) {
                 break;
 
             case 'create':
-                // CREATE: Cadastrar novo país
-                $data = json_decode(file_get_contents('php://input'), true);
-                if ($data) {
-                    $sql = "INSERT INTO paises (nome, continente, populacao, idioma) VALUES (?, ?, ?, ?)";
-                    $stmt = $pdo->prepare($sql);
-                    $stmt->execute([$data['nome'], $data['continente'], $data['populacao'], $data['idioma']]);
-                    $response = ['success' => true, 'message' => 'País cadastrado com sucesso!', 'id' => $pdo->lastInsertId()];
+                // cadastra novo país
+                $data = $input;
+
+                if ($data && isset($data['nome'], $data['continente'], $data['populacao'], $data['idioma'])) {
+                    $sql = "
+                        INSERT INTO paises (nome, continente, populacao, idioma)
+                        VALUES (?, ?, ?, ?)
+                    ";
+                    $stmt = $mysqli->prepare($sql);
+
+                    $nome       = $data['nome'];
+                    $continente = $data['continente'];
+                    $populacao  = (int)$data['populacao'];
+                    $idioma     = $data['idioma'];
+
+                    $stmt->bind_param('ssis', $nome, $continente, $populacao, $idioma);
+                    $stmt->execute();
+
+                    $response = [
+                        'success' => true,
+                        'message' => 'País cadastrado com sucesso!',
+                        'id'      => $mysqli->insert_id
+                    ];
                 }
                 break;
 
             case 'update':
-                // UPDATE: Atualizar dados de um país
-                $data = json_decode(file_get_contents('php://input'), true);
-                if ($data && isset($data['id_pais'])) {
-                    $sql = "UPDATE paises SET nome = ?, continente = ?, populacao = ?, idioma = ? WHERE id_pais = ?";
-                    $stmt = $pdo->prepare($sql);
-                    $stmt->execute([$data['nome'], $data['continente'], $data['populacao'], $data['idioma'], $data['id_pais']]);
+                // atualiza dados de um país
+                $data = $input;
+
+                if (
+                    $data &&
+                    isset($data['id_pais'], $data['nome'], $data['continente'], $data['populacao'], $data['idioma'])
+                ) {
+                    $sql = "
+                        UPDATE paises
+                           SET nome = ?, continente = ?, populacao = ?, idioma = ?
+                         WHERE id_pais = ?
+                    ";
+                    $stmt = $mysqli->prepare($sql);
+
+                    $id_pais    = (int)$data['id_pais'];
+                    $nome       = $data['nome'];
+                    $continente = $data['continente'];
+                    $populacao  = (int)$data['populacao'];
+                    $idioma     = $data['idioma'];
+
+                    $stmt->bind_param('ssisi', $nome, $continente, $populacao, $idioma, $id_pais);
+                    $stmt->execute();
+
                     $response = ['success' => true, 'message' => 'País atualizado com sucesso!'];
                 }
                 break;
 
             case 'delete':
-                // DELETE: Excluir um país
-                if (isset($_GET['id_pais'])) {
-                    $id_pais = $_GET['id_pais'];
+                // exclui um país (e cidades associadas se tiver FK com ON DELETE CASCADE)
+                $id_pais = isset($input['id_pais'])
+                    ? (int)$input['id_pais']
+                    : (isset($_POST['id_pais']) ? (int)$_POST['id_pais'] : null);
 
-                    // Verificar se há cidades associadas (Integridade Referencial)
-                    // Como definimos ON DELETE CASCADE no SQL, a verificação não é estritamente necessária,
-                    // mas é bom para dar um feedback mais claro ao usuário.
-                    $stmt_check = $pdo->prepare("SELECT COUNT(*) FROM cidades WHERE id_pais = ?");
-                    $stmt_check->execute([$id_pais]);
-                    $count = $stmt_check->fetchColumn();
+                if ($id_pais) {
+                    // checa quantas cidades tem ligadas a esse país (só pra mensagem)
+                    $stmt_check = $mysqli->prepare("SELECT COUNT(*) AS total FROM cidades WHERE id_pais = ?");
+                    $stmt_check->bind_param('i', $id_pais);
+                    $stmt_check->execute();
+                    $result_check = $stmt_check->get_result();
+                    $row   = $result_check->fetch_assoc();
+                    $count = (int)$row['total'];
 
-                    if ($count > 0) {
-                        // Se o usuário optar por ON DELETE CASCADE, esta verificação é apenas informativa.
-                        // Se não fosse CASCADE, o DELETE falharia aqui.
-                        // Para este projeto, o CASCADE está configurado no bd_mundo.sql.
-                        // Vamos prosseguir com a exclusão, que também apagará as cidades.
-                    }
+                    $stmt = $mysqli->prepare("DELETE FROM paises WHERE id_pais = ?");
+                    $stmt->bind_param('i', $id_pais);
+                    $stmt->execute();
 
-                    $stmt = $pdo->prepare("DELETE FROM paises WHERE id_pais = ?");
-                    $stmt->execute([$id_pais]);
-
-                    if ($stmt->rowCount() > 0) {
-                        $response = ['success' => true, 'message' => 'País e suas cidades associadas excluídos com sucesso!'];
+                    if ($stmt->affected_rows > 0) {
+                        $msg = 'País excluído com sucesso!';
+                        if ($count > 0) {
+                            $msg = 'País e suas cidades associadas excluídos com sucesso!';
+                        }
+                        $response = ['success' => true, 'message' => $msg];
                     } else {
                         $response = ['success' => false, 'message' => 'País não encontrado para exclusão.'];
                     }
@@ -89,12 +136,9 @@ if (isset($_GET['action'])) {
                 $response['message'] = 'Ação não reconhecida.';
                 break;
         }
-    } catch (\PDOException $e) {
-        // Captura erros de SQL, como violação de UNIQUE (nome do país)
-        $response['message'] = 'Erro no banco de dados: ' . $e->getMessage();
-        // Em um ambiente real, você logaria o erro e não o exporia ao usuário.
     }
+} catch (\mysqli_sql_exception $e) {
+    $response['message'] = 'Erro no banco de dados: ' . $e->getMessage();
 }
 
 echo json_encode($response);
-?>

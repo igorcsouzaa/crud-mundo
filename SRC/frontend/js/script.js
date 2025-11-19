@@ -1,18 +1,6 @@
-// Arquivo: crud_mundo/frontend/js/script.js
-
-// URL base para as chamadas AJAX
 const BASE_URL = '../backend/';
 
-// Chaves de API (OpenWeatherMap requer uma chave)
-// ATENÇÃO: Em um projeto real, esta chave NÃO deve ser exposta no frontend.
-// Para fins de demonstração e seguindo a restrição de "SEM FRAMEWORKS",
-// vamos assumir que o usuário irá inserir sua chave.
 const OPENWEATHERMAP_API_KEY = '7bbfe9d89bd3511defdf4e4475b26150'; // Substitua pela sua chave!
-
-// =================================================================
-// FUNÇÕES DE UTILIDADE
-// =================================================================
-
 /**
  * Exibe um alerta de sucesso ou erro na página.
  * @param {string} message - A mensagem a ser exibida.
@@ -41,28 +29,28 @@ function showAlert(message, type) {
  * @param {object} data - Os dados a serem enviados no corpo da requisição (para POST/PUT).
  * @returns {Promise<object>} - A resposta JSON do servidor.
  */
-async function apiRequest(endpoint, action, method = 'GET', data = null) {
-    let url = `${BASE_URL}${endpoint}?action=${action}`;
+// função genérica pra chamar os endpoints (sempre POST em JSON)
+async function apiRequest(endpoint, action, method = 'POST', data = null) {
+    const url = `${BASE_URL}${endpoint}`;
+
+    // sempre mando "action" no corpo, junto com os outros dados
+    const payload = data ? { action, ...data } : { action };
+
     const options = {
-        method: method,
+        method: 'POST',
         headers: {
             'Content-Type': 'application/json',
         },
+        body: JSON.stringify(payload),
     };
-
-    if (method === 'GET' && data) {
-        // Para GET, anexa dados como query params
-        url += '&' + new URLSearchParams(data).toString();
-    } else if (data) {
-        // Para POST/PUT, envia dados no corpo
-        options.body = JSON.stringify(data);
-    }
 
     try {
         const response = await fetch(url, options);
+
         if (!response.ok) {
             throw new Error(`Erro HTTP! Status: ${response.status}`);
         }
+
         return await response.json();
     } catch (error) {
         console.error('Erro na requisição API:', error);
@@ -70,6 +58,7 @@ async function apiRequest(endpoint, action, method = 'GET', data = null) {
         return { success: false, message: 'Erro de comunicação.' };
     }
 }
+
 
 // =================================================================
 // CRUD PAÍSES (index.html)

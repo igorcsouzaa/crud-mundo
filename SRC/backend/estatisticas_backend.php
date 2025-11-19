@@ -1,18 +1,23 @@
 <?php
-// Arquivo: crud_mundo/backend/estatisticas_backend.php
 header('Content-Type: application/json');
 require_once 'config.php';
 
 $response = ['success' => false, 'message' => 'Requisição inválida.'];
 
-if (isset($_GET['action'])) {
-    $action = $_GET['action'];
-    $pdo = conectar_db();
+try {
+    $mysqli = conectar_db();
 
-    try {
+    $input = json_decode(file_get_contents('php://input'), true);
+    if (!is_array($input)) {
+        $input = [];
+    }
+
+    $action = $input['action'] ?? ($_POST['action'] ?? null);
+
+    if ($action) {
         switch ($action) {
             case 'cidade_mais_populosa_por_pais':
-                // A cidade mais populosa de cada país
+                // pega a cidade mais populosa de cada país
                 $sql = "
                     SELECT
                         p.nome AS nome_pais,
@@ -35,13 +40,14 @@ if (isset($_GET['action'])) {
                     ORDER BY
                         p.nome ASC;
                 ";
-                $stmt = $pdo->query($sql);
-                $estatisticas = $stmt->fetchAll();
+                $result      = $mysqli->query($sql);
+                $estatisticas = $result->fetch_all(MYSQLI_ASSOC);
+
                 $response = ['success' => true, 'data' => $estatisticas];
                 break;
 
             case 'total_cidades_por_continente':
-                // Total de cidades cadastradas por continente
+                // total de cidades por continente
                 $sql = "
                     SELECT
                         p.continente,
@@ -55,8 +61,9 @@ if (isset($_GET['action'])) {
                     ORDER BY
                         total_cidades DESC;
                 ";
-                $stmt = $pdo->query($sql);
-                $estatisticas = $stmt->fetchAll();
+                $result      = $mysqli->query($sql);
+                $estatisticas = $result->fetch_all(MYSQLI_ASSOC);
+
                 $response = ['success' => true, 'data' => $estatisticas];
                 break;
 
@@ -64,10 +71,9 @@ if (isset($_GET['action'])) {
                 $response['message'] = 'Ação não reconhecida.';
                 break;
         }
-    } catch (\PDOException $e) {
-        $response['message'] = 'Erro no banco de dados: ' . $e->getMessage();
     }
+} catch (\mysqli_sql_exception $e) {
+    $response['message'] = 'Erro no banco de dados: ' . $e->getMessage();
 }
 
 echo json_encode($response);
-?>
