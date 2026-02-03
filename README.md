@@ -33,6 +33,22 @@ O projeto foi construído utilizando:
 
 ---
 
+## 🌐 APIs Externas Utilizadas
+
+O projeto integra APIs externas para enriquecer as informações exibidas ao usuário, automatizando dados e melhorando a experiência visual e funcional do sistema.
+
+- **OPENWEATHER API**  
+  Utilizada para obter informações climáticas em tempo real, como temperatura e condições do tempo, com base na cidade cadastrada no sistema.
+
+  A comunicação é feita via requisições HTTP utilizando uma chave de acesso (`OPENWEATHERMAP_API_KEY`), com retorno dos dados em formato JSON.
+
+- **REST COUNTRIES API**  
+  Utilizada para obter dados dos países, incluindo **bandeiras**, nomes e códigos internacionais, permitindo a exibição visual da bandeira correspondente a cada país cadastrado.
+
+  Os dados retornados pela API são consumidos em formato JSON e utilizados diretamente na interface da aplicação.
+
+---
+
 ## 📦 Pré-requisitos
 
 Antes de instalar e rodar o projeto, verifique se você tem instalado:
