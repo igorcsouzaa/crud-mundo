@@ -1,11 +1,6 @@
 const BASE_URL = '../backend/';
 
-const OPENWEATHERMAP_API_KEY = '7bbfe9d89bd3511defdf4e4475b26150'; // Substitua pela sua chave!
-/**
- * Exibe um alerta de sucesso ou erro na página.
- * @param {string} message - A mensagem a ser exibida.
- * @param {string} type - O tipo de alerta ('success' ou 'danger').
- */
+const OPENWEATHERMAP_API_KEY = '7bbfe9d89bd3511defdf4e4475b26150';
 function showAlert(message, type) {
     const container = document.querySelector('.container');
     const alertDiv = document.createElement('div');
@@ -21,15 +16,6 @@ function showAlert(message, type) {
     }, 5000);
 }
 
-/**
- * Faz uma requisição AJAX (GET, POST, PUT, DELETE) para o backend PHP.
- * @param {string} endpoint - O nome do arquivo PHP (ex: 'paises_crud.php').
- * @param {string} action - A ação a ser executada (ex: 'read', 'create').
- * @param {string} method - O método HTTP ('GET', 'POST', 'PUT', 'DELETE').
- * @param {object} data - Os dados a serem enviados no corpo da requisição (para POST/PUT).
- * @returns {Promise<object>} - A resposta JSON do servidor.
- */
-// função genérica pra chamar os endpoints (sempre POST em JSON)
 async function apiRequest(endpoint, action, method = 'POST', data = null) {
     const url = `${BASE_URL}${endpoint}`;
 
@@ -60,13 +46,6 @@ async function apiRequest(endpoint, action, method = 'POST', data = null) {
 }
 
 
-// =================================================================
-// CRUD PAÍSES (index.html)
-// =================================================================
-
-/**
- * Lista todos os países e preenche a tabela.
- */
 async function listarPaises() {
     const tabelaBody = document.querySelector('#tabela-paises tbody');
     if (!tabelaBody) return; // Sai se não estiver na página de países
@@ -101,10 +80,6 @@ async function listarPaises() {
     }
 }
 
-/**
- * Prepara o formulário para edição de um país.
- * @param {number} id_pais - O ID do país a ser editado.
- */
 async function prepararEdicaoPais(id_pais) {
     const result = await apiRequest('paises_crud.php', 'read_one', 'GET', { id_pais });
 
@@ -128,9 +103,6 @@ async function prepararEdicaoPais(id_pais) {
     }
 }
 
-/**
- * Reseta o formulário de país para o modo de cadastro.
- */
 function resetFormPais() {
     document.getElementById('form-pais').reset();
     document.getElementById('id_pais').value = '';
@@ -139,9 +111,6 @@ function resetFormPais() {
     document.getElementById('btn-cancelar-edicao').style.display = 'none';
 }
 
-/**
- * Envia o formulário de país (criação ou edição).
- */
 if (document.getElementById('form-pais')) {
     document.getElementById('form-pais').addEventListener('submit', async function(e) {
         e.preventDefault();
@@ -188,11 +157,6 @@ if (document.getElementById('form-pais')) {
     });
 }
 
-/**
- * Exclui um país após confirmação.
- * @param {number} id_pais - O ID do país a ser excluído.
- * @param {string} nome_pais - O nome do país para a mensagem de confirmação.
- */
 async function excluirPais(id_pais, nome_pais) {
     if (confirm(`Tem certeza que deseja excluir o país ${nome_pais}? Todas as cidades associadas também serão excluídas.`)) {
         const result = await apiRequest('paises_crud.php', 'delete', 'GET', { id_pais });
@@ -206,13 +170,6 @@ async function excluirPais(id_pais, nome_pais) {
     }
 }
 
-// =================================================================
-// CRUD CIDADES (cidades.html)
-// =================================================================
-
-/**
- * Carrega a lista de países para o <select> do formulário de cidades.
- */
 async function carregarPaisesParaSelect() {
     const selectPais = document.getElementById('id_pais_cidade');
     if (!selectPais) return;
@@ -235,9 +192,6 @@ async function carregarPaisesParaSelect() {
     }
 }
 
-/**
- * Lista todas as cidades e preenche a tabela.
- */
 async function listarCidades() {
     const tabelaBody = document.querySelector('#tabela-cidades tbody');
     if (!tabelaBody) return; // Sai se não estiver na página de cidades
@@ -271,10 +225,6 @@ async function listarCidades() {
     }
 }
 
-/**
- * Prepara o formulário para edição de uma cidade.
- * @param {number} id_cidade - O ID da cidade a ser editada.
- */
 async function prepararEdicaoCidade(id_cidade) {
     // A API de cidades não tem um 'read_one' simples, vamos simular lendo todas e filtrando
     const result = await apiRequest('cidades_crud.php', 'read');
@@ -303,9 +253,6 @@ async function prepararEdicaoCidade(id_cidade) {
     }
 }
 
-/**
- * Reseta o formulário de cidade para o modo de cadastro.
- */
 function resetFormCidade() {
     document.getElementById('form-cidade').reset();
     document.getElementById('id_cidade').value = '';
@@ -314,9 +261,6 @@ function resetFormCidade() {
     document.getElementById('btn-cancelar-edicao-cidade').style.display = 'none';
 }
 
-/**
- * Envia o formulário de cidade (criação ou edição).
- */
 if (document.getElementById('form-cidade')) {
     document.getElementById('form-cidade').addEventListener('submit', async function(e) {
         e.preventDefault();
@@ -362,11 +306,6 @@ if (document.getElementById('form-cidade')) {
     });
 }
 
-/**
- * Exclui uma cidade após confirmação.
- * @param {number} id_cidade - O ID da cidade a ser excluída.
- * @param {string} nome_cidade - O nome da cidade para a mensagem de confirmação.
- */
 async function excluirCidade(id_cidade, nome_cidade) {
     if (confirm(`Tem certeza que deseja excluir a cidade ${nome_cidade}?`)) {
         const result = await apiRequest('cidades_crud.php', 'delete', 'GET', { id_cidade });
@@ -380,14 +319,6 @@ async function excluirCidade(id_cidade, nome_cidade) {
     }
 }
 
-// =================================================================
-// FUNÇÕES DE INTEGRAÇÃO COM API EXTERNA (REST Countries e OpenWeatherMap)
-// =================================================================
-
-/**
- * Busca e exibe detalhes de um país usando a REST Countries API.
- * @param {string} nome_pais - O nome do país.
- */
 async function mostrarDetalhesPais(nome_pais) {
     const url = `https://restcountries.com/v3.1/name/${nome_pais}?fields=flags,capital,currencies`;
     const detalhesDiv = document.getElementById('detalhes-pais');
@@ -431,11 +362,6 @@ async function mostrarDetalhesPais(nome_pais) {
     }
 }
 
-/**
- * Busca e exibe o clima atual de uma cidade usando a OpenWeatherMap API.
- * @param {string} nome_cidade - O nome da cidade.
- * @param {string} nome_pais - O nome do país (para melhor precisão).
- */
 async function mostrarClimaCidade(nome_cidade, nome_pais) {
     if (OPENWEATHERMAP_API_KEY === 'SUA_CHAVE_OPENWEATHERMAP_AQUI') {
         showAlert('Por favor, insira sua chave da OpenWeatherMap API no arquivo script.js para usar esta funcionalidade.', 'danger');
@@ -502,13 +428,6 @@ async function mostrarClimaCidade(nome_cidade, nome_pais) {
     }
 }
 
-// =================================================================
-// FUNÇÕES DE ESTATÍSTICAS (estatisticas.html)
-// =================================================================
-
-/**
- * Carrega e exibe as estatísticas na página.
- */
 async function carregarEstatisticas() {
     const maisPopulosaDiv = document.getElementById('cidade-mais-populosa');
     const cidadesPorContinenteDiv = document.getElementById('cidades-por-continente');
@@ -545,12 +464,6 @@ async function carregarEstatisticas() {
         cidadesPorContinenteDiv.innerHTML = `<h4>Total de Cidades por Continente</h4><p>${resultContinente.message}</p>`;
     }
 }
-
-// =================================================================
-// INICIALIZAÇÃO DE PÁGINAS
-// =================================================================
-
-// A inicialização das páginas de Países e Cidades está nos respectivos HTMLs.
 
 // Inicialização da página de Estatísticas
 if (document.getElementById('estatisticas-page')) {
