@@ -17,6 +17,11 @@ Esse tipo de projeto é ideal para demonstrar suas habilidades com:
 - Manipulação de dados (CRUD − Create, Read, Update, Delete)
 - Integração entre frontend e backend 
 
+<p align="center">
+  <img src="docs/tela1.png" width="48%" />
+  <img src="docs/tela2.png" width="48%" />
+</p>
+
 ---
 
 ## 🛠️ Tecnologias Utilizadas
